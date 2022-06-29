@@ -29,7 +29,8 @@
     "quotes": [
       "error",
       "single"
-    ]
+    ],
+    "no-undef": "off"
   },
   "settings": {
     "import/resolver": {
