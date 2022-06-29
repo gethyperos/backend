@@ -97,3 +97,6 @@ dist/
 # Lockfiles
 *.lockfile
 *.lock
+
+# Databases
+*.db
