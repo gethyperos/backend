@@ -14,7 +14,7 @@ export async function createUser(req: Request, res: Response, next: NextFunction
   try {
     const user = createUserDB({ name, password })
 
-    res.status(200).json(user)
+    res.status(200).json({ users: [user] })
   } catch (e) {
     next({
       status: 400,
@@ -42,7 +42,7 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
     })
   }
 
-  res.status(200).json({ user })
+  res.status(200).json({ users: [user] })
 }
 
 export async function updateUser(req: Request, res: Response, next: NextFunction) {
@@ -51,7 +51,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
   try {
     const user = await updateUserDB(Number.parseInt(req.params.userId, 2), data)
 
-    res.status(200).json({ user })
+    res.status(200).json({ users: [user] })
   } catch (e) {
     next({
       status: 400,
@@ -66,7 +66,7 @@ export async function removeUser(req: Request, res: Response, next: NextFunction
   try {
     const user = removeUserDB(Number.parseInt(userId, 2))
 
-    res.status(200).json({ user })
+    res.status(200).json({ users: [user] })
   } catch (e) {
     next({
       status: 400,
