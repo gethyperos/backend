@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+
 declare namespace HyperAPI {
   interface IUser {
     id: number
@@ -20,5 +21,11 @@ declare namespace HyperAPI {
 
   interface IUserResponse extends IBaseResponse {
     user: IUser[]
+  }
+}
+
+declare namespace Express {
+  interface Request {
+    user: HyperAPI.IUserPayload
   }
 }

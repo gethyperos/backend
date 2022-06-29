@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "rootDir": "./src",
+    "rootDir": "./",
     "lib": ["esnext"],
     "moduleResolution": "node",
     "baseUrl": "src",
@@ -10,12 +10,13 @@
       "@util/*": ["utils/*"],
       "@route/*": ["routes/*"],
       "@service/*": ["services/*"],
-      "@controller/*": ["controllers/*"]
+      "@controller/*": ["controllers/*"],
+      "@middleware/*": ["middlewares/*"]
     },
-   "typeRoots": ["node_modules", "@types"],
+    "typeRoots": ["node_modules", "@types"],
     "types": ["jest", "node"],
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
     "outDir": "./dist",
     "removeComments": true,
     "noEmit": true,
@@ -23,8 +24,8 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noUnusedParameters": false,
-    "incremental": true
+    "incremental": true,
   },
-  "include": ["**/*.ts", "**/*.cjs", "jest.config.cjs"],
+  "include": ["**/*.ts", "**/*.cjs", "*.cjs"],
   "exclude": ["node_modules"]
 }
