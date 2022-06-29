@@ -4,6 +4,8 @@ import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
 
 import userRoutes from '@route/user.routes'
+import appRoutes from '@route/app.routes'
+import systemRoutes from '@route/system.routes'
 
 import errorMiddleware from '@middleware/error.middleware'
 
@@ -14,10 +16,10 @@ dotenv.config()
 app.use(helmet())
 app.use(bodyParser)
 
-app.use('/app')
+app.use('/app', appRoutes)
 app.use('/user', userRoutes)
-app.use('/system')
+app.use('/system', systemRoutes)
 
-app.use(errorMiddlware)
+app.use(errorMiddleware)
 
 export default app
