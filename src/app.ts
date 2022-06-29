@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 
 import userRoutes from '@route/user.routes'
 
-import errorMiddlware from './middleware/error.middleware'
+import errorMiddleware from '@middleware/error.middleware'
 
 const app = express()
 

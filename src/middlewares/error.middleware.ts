@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import signale from 'signale'
 
-export default function errorMiddlware(
+export default function errorMiddleware(
   error: any,
   req: Request,
   res: Response,
