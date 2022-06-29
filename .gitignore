@@ -86,3 +86,14 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+# Database files
+prisma/db.sql
+prisma/dev.sql
+
+# Distribution files
+dist/
+
+# Lockfiles
+*.lockfile
+*.lock
