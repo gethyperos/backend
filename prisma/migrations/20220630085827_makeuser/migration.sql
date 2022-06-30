@@ -6,3 +6,6 @@ CREATE TABLE "User" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_name_key" ON "User"("name");
