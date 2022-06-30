@@ -12,6 +12,7 @@ declare namespace HyperAPI {
   interface IUserPayload {
     id: number
     name: string
+    token: string
   }
 
   interface IBaseResponse {

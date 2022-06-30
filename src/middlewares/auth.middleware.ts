@@ -8,6 +8,7 @@ export default async function authenticate(req: Request, res: Response, next: Ne
     next({
       status: 401,
       error: 'Unauthorized',
+      message: 'A token is required',
     })
   }
 
@@ -21,6 +22,15 @@ export default async function authenticate(req: Request, res: Response, next: Ne
     })
   }
 
-  const user = await getUserByToken(token as string)
-  req.user = user
+  try {
+    const user = await getUserByToken(token as string)
+    req.user = user
+    next()
+  } catch (err) {
+    next({
+      status: 401,
+      error: 'Unauthorized',
+      message: err,
+    })
+  }
 }

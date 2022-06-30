@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 dotenv.config()
 const tokenSecret = process.env.JWT_SECRET
 
-export async function validateToken(user: HyperAPI.IUser) {
+export async function validateToken(user: { name: string; id: number }) {
   const token = jwt.sign(
     {
       id: user.id,
@@ -18,6 +18,6 @@ export async function validateToken(user: HyperAPI.IUser) {
 }
 
 export async function getUserByToken(token: string) {
-  const decoded = jwt.verify(token, tokenSecret as string) as { id: number; name: string }
+  const decoded = jwt.verify(token, tokenSecret as string) as HyperAPI.IUserPayload
   return decoded
 }
