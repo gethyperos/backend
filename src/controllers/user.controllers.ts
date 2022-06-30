@@ -6,7 +6,7 @@ import {
   getUserDB,
   removeUserDB,
   updateUserDB,
-} from '@service/user.service'
+} from '@service/user.services'
 
 export async function createUser(req: Request, res: Response, next: NextFunction) {
   const { name, password } = req.body
@@ -34,15 +34,25 @@ export async function getAllUsers(req: Request, res: Response) {
 export async function getUser(req: Request, res: Response, next: NextFunction) {
   const { userId } = req.params
 
-  const user = await getUserDB(Number.parseInt(userId, 2))
-
-  if (!user) {
+  if (!userId) {
     next({
       status: 400,
+      error: 'Missing field',
+      message: 'Missing userId',
     })
   }
 
-  res.status(200).json({ users: [user] })
+  const user = await getUserDB(Number(userId))
+
+  if (!user) {
+    next({
+      status: 404,
+      error: 'Not found',
+      message: 'User not found',
+    })
+  }
+
+  res.status(200).json({ user })
 }
 
 export async function updateUser(req: Request, res: Response, next: NextFunction) {
@@ -64,13 +74,13 @@ export async function removeUser(req: Request, res: Response, next: NextFunction
   const { userId } = req.params
 
   try {
-    const user = removeUserDB(Number.parseInt(userId, 2))
+    const user = await removeUserDB(Number(userId))
 
     res.status(200).json({ users: [user] })
   } catch (e) {
     next({
       status: 400,
-      error: String(e),
+      error: 'User not found',
     })
   }
 }

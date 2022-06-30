@@ -13,9 +13,9 @@ import authMiddleware from '@middleware/auth.middleware'
 const router = express.Router()
 
 router.get('/:userId', getUser)
-router.get('/all', getAllUsers)
-router.post('/create', authMiddleware, createUser)
-router.put(':userId', authMiddleware, updateUser)
-router.delete(':userId', authMiddleware, removeUser)
+router.get('/', getAllUsers)
+router.post('/', authMiddleware, createUser)
+router.put('/:userId', authMiddleware, updateUser)
+router.delete('/:userId', authMiddleware, removeUser)
 
 export default router
