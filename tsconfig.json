@@ -3,18 +3,35 @@
     "target": "es6",
     "module": "commonjs",
     "rootDir": "./",
-    "lib": ["esnext"],
+    "lib": [
+      "esnext"
+    ],
     "moduleResolution": "node",
     "baseUrl": "src",
     "paths": {
-      "@util/*": ["utils/*"],
-      "@route/*": ["routes/*"],
-      "@service/*": ["services/*"],
-      "@controller/*": ["controllers/*"],
-      "@middleware/*": ["middlewares/*"]
+      "@util/*": [
+        "utils/*"
+      ],
+      "@route/*": [
+        "routes/*"
+      ],
+      "@service/*": [
+        "services/*"
+      ],
+      "@controller/*": [
+        "controllers/*"
+      ],
+      "@middleware/*": [
+        "middlewares/*"
+      ],
+      "@root/*": [
+        "./*"
+      ]
     },
-    "typeRoots": ["node_modules", "@types"],
-    "types": ["jest", "node"],
+    "types": [
+      "jest",
+      "node"
+    ],
     "allowJs": true,
     "checkJs": false,
     "outDir": "./dist",
@@ -24,8 +41,16 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noUnusedParameters": false,
-    "incremental": true,
+    "incremental": true
   },
-  "include": ["**/*.ts", "**/*.cjs", "*.cjs"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts",
+    "**/*.cjs",
+    "*.cjs",
+    "*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
