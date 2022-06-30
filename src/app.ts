@@ -1,6 +1,5 @@
 import express from 'express'
 import helmet from 'helmet'
-import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
 
 import userRoutes from '@route/user.routes'
@@ -14,7 +13,8 @@ const app = express()
 dotenv.config()
 
 app.use(helmet())
-app.use(bodyParser)
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 app.use('/app', appRoutes)
 app.use('/user', userRoutes)
