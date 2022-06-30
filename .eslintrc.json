@@ -30,7 +30,8 @@
       "error",
       "single"
     ],
-    "no-undef": "off"
+    "no-undef": "off",
+    "no-unused-vars": "off"
   },
   "settings": {
     "import/resolver": {
