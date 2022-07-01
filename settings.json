@@ -1,0 +1,7 @@
+{
+  "repositoryURL": {
+    "type": "string",
+    "description": "Github URL for app repository",
+    "value": "https://github.com/gethyperos/apps"
+  }
+}
