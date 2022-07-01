@@ -41,18 +41,17 @@ export async function getUser(req: Request, res: Response, next: NextFunction) {
       message: 'Missing userId',
     })
   }
+  try {
+    const user = await getUserDB(Number(userId))
 
-  const user = await getUserDB(Number(userId))
-
-  if (!user) {
+    res.status(200).json({ user })
+  } catch (e) {
     next({
-      status: 404,
-      error: 'Not found',
+      status: 400,
+      error: 'User not found',
       message: 'User not found',
     })
   }
-
-  res.status(200).json({ user })
 }
 
 export async function updateUser(req: Request, res: Response, next: NextFunction) {
