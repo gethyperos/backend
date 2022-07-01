@@ -3,7 +3,7 @@ interface RequestQuery {
   [key: string]: undefined | string | string[] | RequestQuery | RequestQuery[]
 }
 
-export default function searchWithParameters(filters: RequestQuery, objects: any) {
+export function searchWithParameters(filters: RequestQuery, objects: any) {
   const filteredObjects = objects.filter((object: any) => {
     let isValid = true
     // eslint-disable-next-line no-restricted-syntax
@@ -16,4 +16,17 @@ export default function searchWithParameters(filters: RequestQuery, objects: any
   })
 
   return filteredObjects
+}
+
+export function castValueType(value: any, type: string) {
+  switch (type) {
+    case 'string':
+      return value.toString()
+    case 'number':
+      return Number(value)
+    case 'boolean':
+      return Boolean(value)
+    default:
+      return value
+  }
 }
