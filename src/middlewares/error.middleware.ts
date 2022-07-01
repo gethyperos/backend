@@ -10,5 +10,5 @@ export default function errorMiddleware(
   const logger = signale.scope(req.method)
   logger.error({ prefix: req.path, error: error.error, message: error.message })
   res.status(error.status || 500).json({ error: error.error, message: error.message })
-  next()
+  next(error)
 }
