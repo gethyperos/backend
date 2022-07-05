@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 
 import { getAppsDB, addApp, removeApp } from '@service/apps.services'
-import { ensureCache } from '@root/cache/apiCache'
+import { ensureCache, clearCache } from '@root/cache/apiCache'
 
 import { searchWithParameters } from '@util/filtering'
 
@@ -33,9 +33,10 @@ export async function installApp(req: Request, res: Response, next: NextFunction
     next({ statusCode: 400, message: 'App structure is incorrect', error: 'Missing field' })
   }
 
+  clearCache('installedApps')
+
   try {
     await addApp(req.body)
-
     res.status(200).json({ message: 'App installed' })
   } catch (e) {
     next({
@@ -57,6 +58,8 @@ export async function uninstallApp(req: Request, res: Response, next: NextFuncti
     })
   }
 
+  clearCache('installedApps')
+
   try {
     await removeApp(Number(appId))
     res.status(200).json({
@@ -76,7 +79,7 @@ export async function installCustomApp(req: Request, res: Response, next: NextFu
 }
 
 export async function updateApp(req: Request, res: Response, next: NextFunction) {
-  //
+  clearCache('installedApps')
 }
 
 export async function startApp(req: Request, res: Response, next: NextFunction) {
