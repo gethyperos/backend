@@ -24,7 +24,7 @@
     ],
     "import/extensions": [
       "warn",
-      "never"
+      {"ts": "never", "json": "always"}
     ],
     "quotes": [
       "error",
