@@ -21,7 +21,7 @@ app.use(logMiddleware)
 
 app.use('/auth', authRoutes)
 app.use('/app', appRoutes)
-app.use('/user', userRoutes)
+app.use('/users', userRoutes)
 app.use('/system', systemRoutes)
 
 app.use(errorMiddleware)

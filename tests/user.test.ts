@@ -6,32 +6,31 @@ import app from '@root/app'
 
 const prisma = new PrismaClient()
 
-describe('/user', () => {
+describe('/users', () => {
   beforeAll(async () => {
     await prisma.user.create({
       data: {
-        name: 'test',
+        username: 'test',
         password: bcrypt.hashSync('test', 10),
       },
     })
   })
 
   it('should require JWT to create a new user', async () => {
-    request(app)
-      .post('/user')
+    const response = await request(app)
+      .post('/users')
       .send({
-        name: 'nonexistent',
+        username: 'nonexistent',
         password: 'nonexistent',
       })
       .expect(401)
-      .expect('Content-Type', /json/)
   })
 
   it('should return a user by id', async () => {
     const loginResponse = await request(app)
       .post('/auth')
       .send({
-        name: 'test',
+        username: 'test',
         password: 'test',
       })
       .expect('Content-Type', /json/)
@@ -40,7 +39,7 @@ describe('/user', () => {
     const { user } = loginResponse.body
 
     const userResponse = await request(app)
-      .get(`/user/${user.id}`)
+      .get(`/users/${user.id}`)
       .expect('Content-Type', /json/)
       .expect(200)
 
@@ -51,7 +50,7 @@ describe('/user', () => {
     const loginResponse = await request(app)
       .post('/auth')
       .send({
-        name: 'test',
+        username: 'test',
         password: 'test',
       })
       .expect('Content-Type', /json/)
@@ -60,7 +59,7 @@ describe('/user', () => {
     const { user } = loginResponse.body
 
     await request(app)
-      .delete(`/user/${user.id}`)
+      .delete(`/users/${user.id}`)
       .set('Authorization', `Bearer ${user.token}`)
       .expect(200)
 
