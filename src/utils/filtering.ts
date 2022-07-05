@@ -3,13 +3,25 @@ interface RequestQuery {
   [key: string]: undefined | string | string[] | RequestQuery | RequestQuery[]
 }
 
+export function intersection<T>(a: T[], b: T[]): T[] {
+  return a.filter((x) => b.includes(x))
+}
+
 export function searchWithParameters(filters: RequestQuery, objects: any) {
   const filteredObjects = objects.filter((object: any) => {
     let isValid = true
     // eslint-disable-next-line no-restricted-syntax
     for (const key in filters) {
-      // eslint-disable-next-line eqeqeq
-      if (filters[key] != object[key]) {
+      if (Array.isArray(object[key])) {
+        const filterValue = filters[key] as string
+        const objectBase = object[key] as any[]
+        const intersected = intersection(objectBase, filterValue.split(','))
+
+        if (intersected.length === 0 || intersected.length !== filterValue.split(',').length) {
+          isValid = false
+        }
+        // eslint-disable-next-line eqeqeq
+      } else if (filters[key] != object[key]) {
         isValid = false
       }
     }
