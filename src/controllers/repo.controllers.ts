@@ -1,11 +1,20 @@
+import { ensureCache } from '@root/cache/apiCache'
 import { fetchRepositoryData, fetchRepositoryFile } from '@service/repo.services'
 import { searchWithParameters } from '@util/filtering'
+import { fetchFileFromCDN, fetchRepositoryCDN } from '@util/repository'
 import { NextFunction, Request, Response } from 'express'
 
 export async function getRepositoryApps(req: Request, res: Response, next: NextFunction) {
+  const filter = req.query
+  const { appId } = req.params
+
   try {
-    const repository = await fetchRepositoryData()
-    const filteredRepository = searchWithParameters(req.query, repository)
+    const repository = await ensureCache('repositoryApps', async () => {
+      const result = fetchRepositoryData()
+      return result
+    })
+
+    const filteredRepository = searchWithParameters(appId ? { id: appId } : filter, repository)
 
     res.json({
       apps: filteredRepository,
@@ -19,23 +28,23 @@ export async function getRepositoryApps(req: Request, res: Response, next: NextF
   }
 }
 
-export async function getRepositoryApp(req: Request, res: Response, next: NextFunction) {
-  const { appId } = req.params
-
-  if (!appId) {
-    next({
-      statusCode: 400,
-      error: 'Missing field',
-      message: 'appId field is required',
-    })
-  }
+export async function getRepositoryCategories(req: Request, res: Response, next: NextFunction) {
+  const filter = req.query
+  const { categoryName } = req.params
 
   try {
-    const repository = await fetchRepositoryData()
-    const filteredRepository = searchWithParameters({ id: appId }, repository)
+    const categories = await ensureCache('repositoryCategories', async () => {
+      const result = await fetchFileFromCDN('/categories.json')
+      return result
+    })
 
-    res.json({
-      apps: filteredRepository,
+    const filteredCategories = searchWithParameters(
+      categoryName ? { name: categoryName } : filter,
+      categories
+    )
+
+    res.status(200).json({
+      categories: filteredCategories,
     })
   } catch (e) {
     next({
