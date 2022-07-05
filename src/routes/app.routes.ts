@@ -1,26 +1,25 @@
 import express from 'express'
 
 import {
-  getInstalledApp,
-  getInstalledApps,
+  getApps,
   installApp,
   uninstallApp,
-  updateInstalledApp,
+  updateApp,
   startApp,
   stopApp,
-  buildCustomApp,
+  installCustomApp,
 } from '@controller/apps.controller'
 import authMiddleware from '@middleware/auth.middleware'
 
 const router = express.Router()
 
-router.get('/', authMiddleware, getInstalledApps)
-router.get('/:appId', authMiddleware, getInstalledApp)
-router.put('/:appId', authMiddleware, updateInstalledApp)
+router.get('/', authMiddleware, getApps)
 router.post('/', authMiddleware, installApp)
+router.get('/:appId', authMiddleware, getApps)
+router.put('/:appId', authMiddleware, updateApp)
 router.post('/start/:appId', authMiddleware, startApp)
 router.post('/stop/:appId', authMiddleware, stopApp)
-router.post('/custom', authMiddleware, buildCustomApp)
+router.post('/custom', authMiddleware, installCustomApp)
 router.delete('/:appId', authMiddleware, uninstallApp)
 
 export default router

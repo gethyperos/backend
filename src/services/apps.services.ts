@@ -10,16 +10,6 @@ export async function getAppsDB() {
   return apps
 }
 
-export async function getAppDB(appId: number) {
-  const app = await prisma.app.findFirst({
-    where: {
-      id: appId,
-    },
-  })
-
-  return app
-}
-
 export async function installRepositoryApp(app: HyperOS.IAppRepository) {
   const { App: manifest } = app
   const services = makeContainerData(app)

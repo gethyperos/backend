@@ -1,37 +1,26 @@
 import { NextFunction, Request, Response } from 'express'
 
-import {
-  getAppDB,
-  getAppsDB,
-  installRepositoryApp,
-  uninstallRepositoryApp,
-} from '@service/apps.services'
+import { getAppsDB, installRepositoryApp, uninstallRepositoryApp } from '@service/apps.services'
+import { ensureCache } from '@root/cache/apiCache'
 
-export async function getInstalledApps(req: Request, res: Response, next: NextFunction) {
+import { searchWithParameters } from '@util/filtering'
+
+export async function getApps(req: Request, res: Response, next: NextFunction) {
+  const filter = req.query
+  const { appId } = req.params
+
   try {
-    const apps = await getAppsDB()
+    const apps = await ensureCache('installedApps', async () => {
+      const result = await getAppsDB()
+      return result
+    })
+    const filteredApps = searchWithParameters(appId ? { appId } : filter, apps)
 
-    res.status(200).json({ apps })
+    res.status(200).json({ apps: filteredApps })
   } catch (e) {
     next({
       statusCode: 500,
       message: 'Failed to get installed apps',
-      error: `${e}`,
-    })
-  }
-}
-
-export async function getInstalledApp(req: Request, res: Response, next: NextFunction) {
-  const { appId } = req.params
-
-  try {
-    const app = await getAppDB(Number(appId))
-
-    res.status(200).json({ app })
-  } catch (e) {
-    next({
-      statusCode: 500,
-      message: 'Failed to get app',
       error: `${e}`,
     })
   }
@@ -82,11 +71,11 @@ export async function uninstallApp(req: Request, res: Response, next: NextFuncti
   }
 }
 
-export async function buildCustomApp(req: Request, res: Response, next: NextFunction) {
+export async function installCustomApp(req: Request, res: Response, next: NextFunction) {
   //
 }
 
-export async function updateInstalledApp(req: Request, res: Response, next: NextFunction) {
+export async function updateApp(req: Request, res: Response, next: NextFunction) {
   //
 }
 
