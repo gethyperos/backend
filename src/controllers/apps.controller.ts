@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { getAppsDB, installRepositoryApp, uninstallRepositoryApp } from '@service/apps.services'
+import { getAppsDB, addApp, removeApp } from '@service/apps.services'
 import { ensureCache } from '@root/cache/apiCache'
 
 import { searchWithParameters } from '@util/filtering'
@@ -34,7 +34,7 @@ export async function installApp(req: Request, res: Response, next: NextFunction
   }
 
   try {
-    await installRepositoryApp(req.body)
+    await addApp(req.body)
 
     res.status(200).json({ message: 'App installed' })
   } catch (e) {
@@ -58,7 +58,7 @@ export async function uninstallApp(req: Request, res: Response, next: NextFuncti
   }
 
   try {
-    await uninstallRepositoryApp(Number(appId))
+    await removeApp(Number(appId))
     res.status(200).json({
       message: 'App uninstalled',
     })

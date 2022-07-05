@@ -10,7 +10,7 @@ export async function getAppsDB() {
   return apps
 }
 
-export async function installRepositoryApp(app: HyperOS.IAppRepository) {
+export async function addApp(app: HyperOS.IAppRepository) {
   const { App: manifest } = app
   const services = makeContainerData(app)
   const containers: string[] = []
@@ -30,7 +30,7 @@ export async function installRepositoryApp(app: HyperOS.IAppRepository) {
   })
 }
 
-export async function uninstallRepositoryApp(appId: number) {
+export async function removeApp(appId: number) {
   const app = await prisma.app.findUnique({ where: { id: appId } })
 
   if (!app) {
