@@ -6,6 +6,7 @@
     "lib": [
       "esnext"
     ],
+    "resolveJsonModule": true,
     "moduleResolution": "node",
     "baseUrl": "src",
     "paths": {
@@ -40,8 +41,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "noUnusedParameters": false,
-    "incremental": true
+    "noUnusedParameters": false
   },
   "include": [
     "**/*.ts",
