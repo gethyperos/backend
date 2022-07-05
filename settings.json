@@ -1,7 +1,12 @@
 {
   "repositoryURL": {
     "type": "string",
-    "description": "Github URL for app repository",
+    "description": "Github URL from app repository",
     "value": "https://github.com/gethyperos/apps"
+  },
+  "_install_status": {
+    "type": "boolean",
+    "description": "",
+    "value": "false"
   }
 }
