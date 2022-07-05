@@ -1,8 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcrypt'
-import searchWithParameters from '@util/filtering'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  errorFormat: 'minimal',
+})
 
 export async function getUserDB(userId: number) {
   const user = await prisma.user.findUnique({
@@ -19,40 +20,50 @@ export async function getUserDB(userId: number) {
 }
 
 export async function getFilteredUsersDB(filters: any) {
-  const users = await prisma.user.findMany({
-    where: {
-      ...filters,
-    },
-  })
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        ...filters,
+      },
+    })
 
-  return users
+    return users
+  } catch (e) {
+    throw new Error('Unable to fetch datbase')
+  }
 }
 
 export async function getAllUsersDB() {
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  })
-  const filteredUsers = searchWithParameters({}, users)
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })
 
-  return filteredUsers
+    return users
+  } catch (e) {
+    throw new Error('Unable to find user')
+  }
 }
 
-export async function createUserDB(data: { name: string; password: string }) {
+export async function createUserDB(data: { username: string; password: string }) {
   const hashedPassword = bcrypt.hashSync(data.password, 10)
 
-  const user = await prisma.user.create({
-    data: {
-      name: data.name,
-      password: hashedPassword,
-    },
-  })
-
-  return user
+  try {
+    const user = await prisma.user.create({
+      data: {
+        username: data.username,
+        password: hashedPassword,
+      },
+    })
+    return user
+  } catch (e) {
+    throw new Error('User already exists')
+  }
 }
 
 export async function updateUserDB(userId: number, data: { name?: string; password?: string }) {
