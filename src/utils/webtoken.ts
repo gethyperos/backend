@@ -4,11 +4,11 @@ import jwt from 'jsonwebtoken'
 dotenv.config()
 const tokenSecret = process.env.JWT_SECRET
 
-export async function validateToken(user: { name: string; id: number }) {
+export async function validateToken(user: { username: string; id: number }) {
   const token = jwt.sign(
     {
       id: user.id,
-      name: user.name,
+      name: user.username,
     },
     tokenSecret as string,
     { expiresIn: '3d' }
