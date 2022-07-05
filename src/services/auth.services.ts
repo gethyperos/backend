@@ -3,10 +3,16 @@ import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
-export default async function checkUser({ name, password }: { name: string; password: string }) {
+export default async function checkUser({
+  username,
+  password,
+}: {
+  username: string
+  password: string
+}) {
   const user = await prisma.user.findFirst({
     where: {
-      name,
+      username,
     },
   })
 
