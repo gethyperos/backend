@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { getAppsDB, addApp, removeApp } from '@service/apps.services'
+import { getAppsDB, addApp, removeApp, updateAppDB } from '@service/apps.services'
 import { ensureCache, clearCache } from '@root/cache/apiCache'
 
 import { searchWithParameters } from '@util/filtering'
@@ -79,7 +79,26 @@ export async function installCustomApp(req: Request, res: Response, next: NextFu
 }
 
 export async function updateApp(req: Request, res: Response, next: NextFunction) {
-  clearCache('installedApps')
+  const { appId } = req.params
+
+  if (!appId) {
+    next({
+      statusCode: 400,
+      message: 'AppId is missing',
+      error: 'Missing field',
+    })
+  }
+
+  try {
+    const app = await updateAppDB(Number(appId), req.body)
+    clearCache('installedApps')
+  } catch (e) {
+    next({
+      statusCode: 500,
+      message: 'Failed to update app',
+      error: `${e}`,
+    })
+  }
 }
 
 export async function startApp(req: Request, res: Response, next: NextFunction) {

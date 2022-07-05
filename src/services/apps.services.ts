@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client'
+import { clearCache } from '@root/cache/apiCache'
 import { addDockerContainer, makeContainerData, removeDockerContainer } from '@util/docker'
 import { asyncForEach } from '@util/general'
+import e from 'express'
 
 const prisma = new PrismaClient()
 
@@ -41,4 +43,22 @@ export async function removeApp(appId: number) {
   })
 
   await prisma.app.delete({ where: { id: appId } })
+}
+
+export async function updateAppDB(
+  appId: number,
+  fieldsToUpdate: { name?: string; icon?: string; port?: number }
+) {
+  const app = await prisma.app.findUnique({ where: { id: appId } })
+
+  if (!app) {
+    throw new Error('App not found')
+  }
+
+  const updatedApp = await prisma.app.update({
+    where: { id: appId },
+    data: fieldsToUpdate,
+  })
+  clearCache('installedApps')
+  return updatedApp
 }
