@@ -36,8 +36,8 @@ export async function installApp(req: Request, res: Response, next: NextFunction
   clearCache('installedApps')
 
   try {
-    await addApp(req.body)
-    res.status(200).json({ message: 'App installed' })
+    const app = await addApp(req.body)
+    res.status(200).json({ message: 'App installed', app })
   } catch (e) {
     next({
       statusCode: 500,

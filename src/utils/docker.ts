@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import Docker from 'dockerode'
+import Docker, { Network } from 'dockerode'
 import { arch } from 'os'
 import stream from 'stream'
 
@@ -40,21 +40,51 @@ export async function getDockerConn(): Promise<Docker> {
   return conn
 }
 
-export async function addDockerContainer(containerData: HyperAPI.IDockerContainer) {
+export async function addDockerNetwork(name: string) {
+  const docker = await getDockerConn()
+  const network = await docker.createNetwork({
+    Name: name,
+    Driver: 'bridge',
+  })
+
+  return network
+}
+
+export async function removeDockerNetwork(nameOrId: string) {
+  //
+}
+
+export async function getNetwork(nameOrId: string) {
+  const docker = await getDockerConn()
+
+  const network = await docker.getNetwork(nameOrId)
+
+  return network
+}
+
+export async function addDockerContainer(
+  containerData: HyperAPI.IDockerContainer,
+  networkName?: string
+) {
   const docker = await getDockerConn()
 
   const pullStream = await docker.pull(containerData.Image)
 
-  try {
-    await waitForStreamEnd(pullStream)
-    const container = await docker.createContainer(containerData)
-    await container.start()
-    return container
-  } catch (e) {
-    const container = await docker.getContainer(containerData.name)
-    await container.remove()
-    throw e
+  await waitForStreamEnd(pullStream)
+  const container = await docker.createContainer(containerData)
+
+  if (networkName) {
+    const network = await getNetwork(networkName)
+    await network.connect({
+      Container: container.id,
+    })
+    const bridge = await getNetwork('bridge')
+    await bridge.disconnect({
+      Container: container.id,
+    })
   }
+  await container.start()
+  return container
 }
 
 export async function getContainerState(containerId: string) {

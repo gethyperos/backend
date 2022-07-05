@@ -8,5 +8,10 @@
     "type": "boolean",
     "description": "",
     "value": "false"
+  },
+  "dockerURI": {
+    "type": "string",
+    "description": "Docker URL or Socket path",
+    "value": "/var/run/docker.sock"
   }
 }

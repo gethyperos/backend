@@ -1,6 +1,12 @@
 import { PrismaClient } from '@prisma/client'
 import { clearCache } from '@root/cache/apiCache'
-import { addDockerContainer, makeContainerData, removeDockerContainer } from '@util/docker'
+import {
+  addDockerContainer,
+  addDockerNetwork,
+  makeContainerData,
+  removeDockerContainer,
+  removeDockerNetwork,
+} from '@util/docker'
 import { asyncForEach } from '@util/general'
 import e from 'express'
 
@@ -16,20 +22,34 @@ export async function addApp(app: HyperOS.IAppRepository) {
   const { App: manifest } = app
   const services = makeContainerData(app)
   const containers: string[] = []
-  await asyncForEach(services, async (service) => {
-    const container = await addDockerContainer(service)
-    containers.push(container.id)
-  })
 
-  await prisma.app.create({
+  const network = await addDockerNetwork(app.Services[Object.keys(app.Services)[0]].container_name)
+
+  try {
+    await asyncForEach(services, async (service) => {
+      const container = await addDockerContainer(service, network.id)
+      containers.push(container.id)
+    })
+  } catch (err) {
+    await asyncForEach(services, async (service) => {
+      await removeDockerContainer(service.name)
+    })
+    await removeDockerNetwork(app.Services[Object.keys(app.Services)[0]].container_name)
+    throw err
+  }
+
+  const appDB = await prisma.app.create({
     data: {
       container: containers.join(','),
+      network: network.id,
       name: manifest.name,
       external: false,
       icon: manifest.icon,
       port: manifest.webuiPort || -1,
     },
   })
+
+  return appDB
 }
 
 export async function removeApp(appId: number) {
@@ -38,6 +58,11 @@ export async function removeApp(appId: number) {
   if (!app) {
     throw new Error('App not found')
   }
+
+  if (app.network) {
+    await removeDockerNetwork(app.network)
+  }
+
   await asyncForEach(app.container.split(','), async (containerId) => {
     await removeDockerContainer(containerId)
   })
