@@ -8,9 +8,46 @@ datasource db {
 }
 
 model User {
-  id          Int @id @default(autoincrement())
-  name        String @unique
-  password    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  id         Int          @id @default(autoincrement())
+  username   String       @unique
+  password   String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now())
+  UserConfig UserConfig[]
+  Bookmark   Bookmark[]
+}
+
+model Config {
+  id     Int    @id @default(autoincrement())
+  key    String @unique
+  value  String
+  type   String
+}
+
+model UserConfig {
+  id     Int    @id @default(autoincrement())
+  user   User?  @relation(fields: [userId], references: [id])
+  userId Int
+  key    String
+  value  String
+}
+
+model App {
+  id        Int      @id @default(autoincrement())
+  container String   @unique
+  name      String
+  icon      String
+  port      Int
+  external  Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Bookmark {
+  id     Int    @id @default(autoincrement())
+  url    String
+  name   String
+  icon   String
+  user   User?  @relation(fields: [userId], references: [id])
+  userId Int
 }
