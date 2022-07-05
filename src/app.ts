@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 
 import userRoutes from '@route/user.routes'
 import appRoutes from '@route/app.routes'
+import repoRoutes from '@route/repo.routes'
 import systemRoutes from '@route/system.routes'
 import authRoutes from '@route/auth.routes'
 import setupRoutes from '@route/setup.routes'
@@ -22,6 +23,7 @@ app.use(logMiddleware)
 
 app.use('/auth', authRoutes)
 app.use('/app', appRoutes)
+app.use('/repo', repoRoutes)
 app.use('/users', userRoutes)
 app.use('/system', systemRoutes)
 app.use('/install', setupRoutes)
