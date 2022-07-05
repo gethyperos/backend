@@ -1,21 +1,28 @@
 import { validateToken } from '@util/webtoken'
 import { NextFunction, Request, Response } from 'express'
-import checkUser from '@service/auth.services'
+import authenticateUser from '@service/auth.services'
 
 export default async function login(req: Request, res: Response, next: NextFunction) {
   const { username, password } = req.body
 
-  if (!username || !password) {
+  if (!username) {
     next({
-      error: 'Invalid credentials',
-      message: 'Please provide a valid username and password',
+      error: 'Missing fields.',
+      message: 'Missing username.',
+      status: 400,
+    })
+  }
+
+  if (!password) {
+    next({
+      error: 'Missing fields.',
+      message: 'Missing password.',
       status: 400,
     })
   }
 
   try {
-    const user = await checkUser({ username, password })
-
+    const user = await authenticateUser({ username, password })
     const token = await validateToken(user)
 
     res.json({
@@ -28,8 +35,8 @@ export default async function login(req: Request, res: Response, next: NextFunct
   } catch (e) {
     next({
       statusCode: 401,
-      error: String(e),
-      message: 'Invalid credentials',
+      error: `${e}`,
+      message: 'Failed authentication/',
     })
   }
 }

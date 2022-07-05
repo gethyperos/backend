@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
-export default async function checkUser({
+export default async function authenticateUser({
   username,
   password,
 }: {
