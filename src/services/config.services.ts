@@ -1,17 +1,21 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function getFilteredConfigsDB(filters: any) {
+export async function getConfigsDB() {
   try {
-    const configs = await prisma.config.findMany({
-      where: {
-        ...filters,
-      },
-    })
+    const configs = await prisma.config.findMany({})
 
     return configs
   } catch (e) {
     throw new Error('Unable to fetch database')
   }
+}
+
+export async function removeConfigDB() {
+  // TODO
+}
+
+export async function updateConfigDB() {
+  // TODO
 }
