@@ -6,9 +6,9 @@ export default async function authenticate(req: Request, res: Response, next: Ne
 
   if (!bearer) {
     next({
-      status: 401,
+      statusCode: 401,
       error: 'Unauthorized',
-      message: 'A token is required',
+      message: 'Token is required',
     })
   }
 
@@ -16,9 +16,9 @@ export default async function authenticate(req: Request, res: Response, next: Ne
 
   if (!token) {
     next({
-      status: 401,
+      statusCode: 401,
       error: 'Unauthorized',
-      message: 'A token is required',
+      message: 'Empty token',
     })
   }
 
@@ -28,9 +28,9 @@ export default async function authenticate(req: Request, res: Response, next: Ne
     next()
   } catch (err) {
     next({
-      status: 401,
+      statusCode: 401,
       error: 'Unauthorized',
-      message: err,
+      message: `${err}`,
     })
   }
 }
