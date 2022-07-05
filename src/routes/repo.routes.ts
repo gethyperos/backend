@@ -4,7 +4,7 @@ import { getRepositoryApp, getRepositoryApps } from '@controller/repo.controller
 
 const router = express.Router()
 
-router.get('/', getRepositoryApps)
-router.get('/:appId', getRepositoryApp)
+router.get('/apps', getRepositoryApps)
+router.get('/apps/:appId', getRepositoryApp)
 
 export default router
