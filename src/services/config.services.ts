@@ -12,10 +12,19 @@ export async function getConfigsDB() {
   }
 }
 
-export async function removeConfigDB() {
-  // TODO
-}
+export async function updateConfigDB(key: string, value: string) {
+  try {
+    const config = await prisma.config.update({
+      where: {
+        key,
+      },
+      data: {
+        value,
+      },
+    })
 
-export async function updateConfigDB() {
-  // TODO
+    return config
+  } catch (e) {
+    throw new Error('Unable to update database')
+  }
 }
