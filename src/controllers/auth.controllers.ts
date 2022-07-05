@@ -3,31 +3,31 @@ import { NextFunction, Request, Response } from 'express'
 import checkUser from '@service/auth.services'
 
 export default async function login(req: Request, res: Response, next: NextFunction) {
-  const { name, password } = req.body
+  const { username, password } = req.body
 
-  if (!name || !password) {
+  if (!username || !password) {
     next({
       error: 'Invalid credentials',
-      message: 'Please provide a valid name and password',
+      message: 'Please provide a valid username and password',
       status: 400,
     })
   }
 
   try {
-    const user = await checkUser({ name, password })
+    const user = await checkUser({ username, password })
 
     const token = await validateToken(user)
 
     res.json({
       user: {
-        name: user.name,
+        name: user.username,
         id: user.id,
         token,
       },
     })
   } catch (e) {
     next({
-      status: 401,
+      statusCode: 401,
       error: String(e),
       message: 'Invalid credentials',
     })
