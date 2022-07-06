@@ -168,7 +168,7 @@ export function makeContainerData(repositoryApp: HyperOS.IAppRepository) {
     })
 
     const containerData: HyperAPI.IDockerContainer = {
-      name: `hypros-${service.container_name}`,
+      name: `${service.container_name}`,
       Image: parsedImage,
       HostConfig: {
         Binds: parsedVolumes,
@@ -182,6 +182,9 @@ export function makeContainerData(repositoryApp: HyperOS.IAppRepository) {
       Cmd: service.command,
       Env: parsedEnv,
       RestartPolicy: { Name: service.restart },
+      Labels: {
+        'com.docker.stack.namespace': 'HyperOS',
+      },
     }
 
     containers.push(containerData)
