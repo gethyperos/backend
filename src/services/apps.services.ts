@@ -45,7 +45,7 @@ export async function addApp(app: HyperOS.IAppRepository) {
       name: manifest.name,
       external: false,
       icon: manifest.icon,
-      port: manifest.webuiPort || -1,
+      port: Number(manifest.webport) || -1,
     },
   })
 

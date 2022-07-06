@@ -89,3 +89,21 @@ export async function getAppStatic(req: Request, res: Response, next: NextFuncti
     })
   }
 }
+
+export async function getRepository(req: Request, res: Response, next: NextFunction) {
+  try {
+    const repository = await fetchRepositoryCDN()
+
+    res.status(200).json({
+      url: repository,
+      apps: `${repository}/index.json`,
+      categories: `${repository}/categories.json`,
+    })
+  } catch (e) {
+    next({
+      statusCode: 500,
+      message: 'unable to parse repository file',
+      error: `${e}`,
+    })
+  }
+}

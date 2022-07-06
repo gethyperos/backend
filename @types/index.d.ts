@@ -70,6 +70,10 @@ declare namespace HyperOS {
        */
       id: string
       /**
+       * Port for web interface (if any)
+       */
+      webport: string
+      /**
        * App Name
        */
       name: string
