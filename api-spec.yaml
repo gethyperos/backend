@@ -1,0 +1,1759 @@
+openapi: 3.0.0
+
+info:
+  description: "HyperOS API Specifications"
+  version: 0.0.1
+  title: HyperOS
+  contact:
+    email: matheus.silva3@ftc.edu.br
+  license:
+    name: GNU GPL V3
+    
+tags:
+  - name: Apps
+    description: Manage and query installed applications
+  - name: System
+    description: System information pooling
+  - name: Users
+    description: User operations
+  - name: Repository
+    description: App repository consults
+  - name: Static
+    description: Static files loaded from repository
+  - name: Install
+    description: Performas initial setup (Can be called only once)
+    
+paths:
+  /auth:
+    post:
+      tags:
+        - Auth
+      summary: "Validates user credentials agains database."
+      description: "Returns payload containing a new JWT Token when succeeded."
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:  
+              $ref: '#/components/schemas/UserAuth'
+      responses:
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTPayload'
+        "500":
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          
+  /apps:
+    get:
+      parameters:
+      - in: query
+        name: Available queries
+        style: deepObject
+        allowReserved: true
+        schema:
+          $ref: '#/components/schemas/InstalledAppQueryParameters'
+      operationId: getInstalledApps
+      tags:
+        - Apps
+      summary: "Lists installed apps"
+      description: "Returns array with apps installed under HyperOS"
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstalledApp'
+        "404":
+          description: "app not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "unable to gather app"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Apps
+      description: "Creates needed containers and database entries needed to install repository apps into HyperOS"
+      operationId: installApp
+      summary: "Installs new app"
+      requestBody:
+        description: "RepositoryApp manifest to be parsed and installed"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryAppManifest'
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      default: "App installed"
+                    app:
+                      $ref: '#/components/schemas/InstalledApp'
+        "500":
+          description: "Internal error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'                
+                
+  /apps/{appId}:
+    get:
+      operationId: getInstalledApp
+      tags:
+        - Apps
+      summary: "Get's one specific installed app"
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: string
+            example: transmission
+          description:
+            The repositoryID of the installed app to be queried.
+      description: "Returns array with only the specified app data"
+      responses:
+        "200":
+          description: "ok"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstalledApps'
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "app not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "unable to gather app"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: uninstallApp
+      tags:
+        - Apps
+      summary: "Uninstalls app"
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: number
+            example: 1
+          description:
+            The databaseID of the installed app to be queried.
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: "App unintalled"
+                  app:
+                    $ref: '#/components/schemas/InstalledApp'
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "app not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "unable to uninstall app"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updateApp
+      tags:
+        - Apps
+      summary: "Updates installed app"
+      requestBody:
+        description: "Object with values to change"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstalledApp'
+          
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: number
+            example: 1
+          description:
+            The databaseID of the installed app to be queried.
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: "App updated"
+                  app:
+                    $ref: '#/components/schemas/InstalledApp'
+        "404":
+          description: "app not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "unable to update app"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /apps/{appId}/start:
+    post:
+      description: "Starts app container if not running alredy"
+      summary: "Starts app container"
+      tags:
+        - Apps
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: number
+            example: 1
+          description:
+            The databaseID of the installed app to be queried.
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "App not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Failed starting app containers"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /apps/{appId}/stop:
+    post:
+      description: "Stops app container if not stopped alredy"
+      summary: "Stops app container"
+      tags:
+        - Apps
+      parameters:
+        - in: path
+          name: appId
+          required: true
+          schema:
+            type: number
+            example: 1
+          description:
+            The databaseID of the installed app to be queried.
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "App not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Failed stopping containers"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  /system/configs:
+    get:
+      description: "Lists all available config options"
+      summary: "Returns array with configs defined on database"
+      tags:
+        - System
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            applications/javascript:
+              schema:
+                $ref: '#/components/schemas/Configs'
+        "500":
+          description: "Internal error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /system/configs/{configKey}:
+    put:
+      summary: "Modified the value of a config"
+      description: "Clears the docker connection cache and modified a config value on database"
+      parameters:
+        - in: path
+          name: configKey
+          required: true
+          schema:
+            type: string
+            example: "dockerURI"
+          description:
+            The databaseID of the installed app to be queried.
+      tags:
+        - System
+      responses:
+        "200":
+          description: "OK"
+          content:
+            applications/javascript:
+              schema:
+                $ref: '#/components/schemas/Configs'
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      summary: "Get's specific config value"
+      description: "Returns config object with specified key"
+      parameters:
+        - in: path
+          name: configKey
+          required: true
+          schema:
+            type: string
+            example: "dockerURI"
+          description:
+            The databaseID of the installed app to be queried.
+      tags:
+        - System
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            applications/javascript:
+              schema:
+                $ref: '#/components/schemas/Configs'
+        "500":
+          description: "Internal error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /system/containers:
+    get:
+      summary: "Lists docker containers"
+      description: "Queries the docker URI for installed containers - Accepts query parameters based on ContainerList schema from docker api"
+      tags:
+        - System
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: >
+            "OK - "
+            "https://docs.docker.com/engine/api/v1.41/#tag/Container/operation/ContainerList"
+        "500":
+          description: "Internal error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /system/images:
+    get:
+      summary: "Lists pulled docker images"
+      description: "Queries the docker URI for pulled images"
+      tags:
+        - System
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: >
+            "OK - "
+            "https://docs.docker.com/engine/api/v1.41/#tag/Container/operation/ImageList"  
+        "500":
+          description: "Internal error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  /users:
+    get:
+      summary: "Lists users"
+      description: "Returns array with all HyperOS users"
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: Available queries
+          style: deepObject
+          allowReserved: true
+          schema:
+            $ref: '#/components/schemas/UserDB'
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                   $ref: '#/components/schemas/User'
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: "Creates new user"
+      description: "Creates a new user under database"
+      tags:
+        - Users
+      requestBody:
+        description: "New user credentials"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAuth'
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "500":
+           description: "Internal Error"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                   $ref: '#/components/schemas/User'
+  /users/{userId}:
+    get:
+      summary: "Get specific user information"
+      description: "Queries information from specific user on database"
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: number
+            example: 1
+          description:
+            The userID to be queries
+      tags:
+        - Users
+      responses:
+        "200": 
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+    put:
+      summary: "Updates values from user"
+      description: "Updates value from user on database"
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: number
+            example: 1
+          description:
+            The userID to be modified
+      tags:
+        - Users
+      responses:
+        "401":
+             description: "Unauthorized"
+             content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                   $ref: '#/components/schemas/User'
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: "Internal error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'  
+    delete:
+      summary: "Removes user"
+      description: "Removes user from database"
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: number
+            example: 1
+          description:
+            The userID to be deleted
+      tags:
+        - Users
+      responses:
+        "401":
+           description: "Unauthorized"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: "Incorrect request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+           description: "Internal Error"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                   $ref: '#/components/schemas/User'
+  
+  /repo:
+    get:
+      summary: "Lists repository-related URL's"
+      description: "Returns a list of generated repository-related url's"
+      tags:
+        - Repository
+      responses:
+        "200":
+          description: "OK"
+  /repo/apps:
+    get:
+      parameters:
+        - in: query
+          name: Available queries
+          style: deepObject
+          allowReserved: true
+          schema:
+            type: object
+            properties:
+              id: 
+                type: string
+              name: 
+                type: string
+              categories:
+                type: string
+                example: "Network,Torrent,CategoryName"
+              directory:
+                type: string       
+      summary: "Lists currently available apps from repository"
+      description: "Returns a compiled index of available apps from repository"
+      tags:
+        - Repository
+      responses:
+        "200":
+           description: "OK"
+           content:
+             application/json:
+               schema:
+                   type: object
+                   properties:
+                     apps:
+                       type: array
+                       items:
+                         $ref: '#/components/schemas/RepositoryApp'
+  /repo/categories:
+    get:
+      summary: "Lists currently available categories from repository"
+      description: "Returns available categories from repository"
+      parameters:
+        - in: query
+          name: Available queries
+          style: deepObject
+          allowReserved: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              icon:
+                type: string
+      tags:
+        - Repository
+      responses:
+        "200":
+           description: "OK"
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/RepositoryAppCategory'
+                           
+  /static/{repoAppId}:
+    get:
+      summary: "Returns app static resources"
+      description: "If no path is provided, returns the app.json manifest from repository"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryAppManifest'
+      tags:
+        - Static
+      parameters:
+        - in: path
+          name: repoAppId
+          required: true
+          schema:
+            type: string
+            example: transmission
+            description:
+              Repository App ID
+        - in: query
+          name: path
+          required: true
+          schema:
+            type: string
+            example: metadata/icon.png
+            description: "Path to required file"
+
+  /install:
+    post:
+      summary: "Performs initial setup"
+      description: "Performs needed insertions on database for basic functions to work"
+      tags:
+        - Install
+      requestBody:
+        description: Basic values for database seeding
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/UserAuth'
+                hostname:
+                  type: string
+                dockerURI:
+                  type: string
+                  description: "Docker URI for socket/http endpoints"
+                  example: "/var/run/docker.sock or http://192.168.0.1:5000"
+      responses:
+        "500":
+           description: "Internal Error"
+           content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: "ok"
+          content:
+            metadata/json:
+              schema:
+                type: object
+                properties:
+                  message: 
+                    type: string
+                    example: HyperOS Installed
+          
+components:
+  schemas:
+    JWTPayload:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            username:
+              type: string
+            id:
+              type: number
+            token:
+              type: string
+    UserAuth:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    UserDB:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        id:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        id:
+          type: string
+        createdAt: 
+          type: string
+        updatedAt:
+          type: string
+    InstalledApp:
+      type: object
+      properties:
+        id:
+          type: string
+        container:
+          type: string
+        network:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+        port:  
+          type: string
+        external:
+          type: boolean
+          default: false
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    InstalledApps:
+      type: array
+      items:
+        $ref: '#/components/schemas/InstalledApp'
+    InstalledAppQueryParameters:
+      type: object
+      properties:
+        id:
+          type: number
+        container: 
+          type: string
+        network: 
+          type: string
+        name: 
+          type: string
+        icon: 
+          type: string
+        port: 
+          type: number
+        external: 
+          type: boolean
+        createdAt: 
+          type: string
+        updatedAt: 
+          type: string
+    RepositoryAppQueryParameters:
+      type: object
+      properties:
+        id: 
+          type: string
+        name: 
+          type: string
+        categories:
+          type: string
+          example: "Network,Torrent,CategoryName"
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    ConfigDB:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          description: "Casting type for config value (number | string | boolean)"
+    Configs:
+      type: array
+      items:
+        $ref: '#/components/schemas/ConfigDB'
+    RepositoryApp:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        directory:
+          type: string
+        icon:
+          type: string
+        manifest:
+          type: string
+          example: app.json
+        metadata:
+          type: string
+          example: metadata/app.md
+        categories:
+          type: array
+          items:
+            type: string
+    RepositoryAppManifest:
+      type: object
+      description: HyperOS App specifications
+      properties:
+        App:
+          type: object
+          description: HyperOS App specifications
+          properties:
+            webport:
+              type: string
+              description: Default port for web interface (if any)
+            id:
+              type: string
+              description: App Unique Identifier
+              pattern: "^[a-z0-9-_]+$"
+            name:
+              type: string
+              description: App Name
+            icon:
+              type: string
+              description: App Icon file (relative to app.json)
+              pattern: ".*\\.(webp|png|gif)"
+            description:
+              type: string
+              description: App Description
+              minItems: 1
+              uniqueItems: true
+            categories:
+              type: array
+              description: App Categories (Must exist in categories.json file)
+              items:
+                type: string
+              minItems: 1
+            directory:
+              type: string
+              description: Directory name where this app.json is located (Usually the app
+                name)
+              pattern: "^[a-zA-Z0-9-_]+$"
+        Services:
+            description: >-
+              Docker-compose style services list but expanded to allow Volta
+              customizability
+            type: object
+            properties:
+              '^[a-zA-Z0-9_-]+$':
+                type: object
+                description: Service
+                properties:
+                  images:
+                    type: object
+                    description: App Docker images for supported platforms
+                    properties:
+                      armhf:
+                        type: string
+                        description: Arm / ArmHF image
+                      arm64:
+                        type: string
+                        description: Arm64 image
+                      x86_64:
+                        type: string
+                        description: Default image (32/64bit)
+                    required:
+                      - x86_64
+                  container_name:
+                    type: string
+                    description: 'Container name'
+                    pattern: '^[a-zA-Z0-9-_]+$'
+                  environment:
+                    type: array
+                    description: Environment variables for the container
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Environment variable name
+                        value:
+                          type: string
+                          description: Environment variable value
+                        description:
+                          type: string
+                          description: Environment variable description (Used by front-end)
+                      required:
+                        - name
+                        - value
+                      minItems: 1
+                  ports:
+                    type: array
+                    description: Ports for the container
+                    items:
+                      type: object
+                      properties:
+                        host:
+                          type: string
+                          description: Port to be exposed on HOST
+                        container:
+                          type: string
+                          description: Port on container
+                        protocol:
+                          type: string
+                          description: Protocol (tcp/udp) defaults to tcp
+                          enum:
+                            - tcp
+                            - udp
+                        description:
+                          type: string
+                          description: Port description (Used by front-end)
+                      required:
+                        - host
+                        - container
+                        - description
+                      minItems: 1
+                  volumes:
+                    type: array
+                    description: Volume bindings for the container
+                    items:
+                      type: object
+                      properties:
+                        host:
+                          type: string
+                          description: Path on host
+                          pattern: '((\.{2}/{1})+|((\.{1}/{1})?)|(/{1}))([a-zA-Z0-9])+$'
+                        container:
+                          type: string
+                          description: Path on container
+                          pattern: '((\.{2}/{1})+|((\.{1}/{1})?)|(/{1}))([a-zA-Z0-9])+$'
+                        description:
+                          type: string
+                          description: Volume description (Used by front-end)
+                      required:
+                        - host
+                        - container
+                      minItems: 1
+                  devices:
+                    type: array
+                    description: Devices for the container
+                    items:
+                        type: object
+                        properties:
+                          host:
+                            type: string
+                            description: Path on host
+                            pattern: >-
+                              ((\.{2}/{1})+|((\.{1}/{1})?)|(/{1}))(([a-zA-Z0-9]+/{1})+)([a-zA-Z0-9])+$
+                          container:
+                            type: string
+                            description: Path on container
+                            pattern: >-
+                              ((\.{2}/{1})+|((\.{1}/{1})?)|(/{1}))(([a-zA-Z0-9]+/{1})+)([a-zA-Z0-9])+$
+                          description:
+                            type: string
+                            description: Device description (Used by front-end)
+                        required:
+                          - host
+                          - container
+                        minItems: 1
+                  cap_add:
+                    type: array
+                    description: Capabilities to add to the container
+                    items:
+                      type: string
+                      description: Capability name
+                      pattern: '^[a-zA-Z0-9-_]+$'
+                    minItems: 1
+                  cap_drop:
+                    type: array
+                    description: Capabilities to drop from the container
+                    items:
+                      type: string
+                      description: Capability name
+                      pattern: '^[a-zA-Z0-9-_]+$'
+                    minItems: 1
+                  restart:
+                    type: string
+                    description: Restart policy for the container
+                    enum:
+                      - 'no'
+                      - always
+                      - on-failure
+                      - unless-stopped
+                  network_mode:
+                    type: object
+                    description: ' set service containers network mode.'
+                    properties:
+                      mode:
+                        description: Network mode (must include service name if using service mode)
+                        enum:
+                          - host
+                          - none
+                          - service
+                        type: string
+                      service:
+                        description: Service name in case mode = service
+                        type: string
+                    required:
+                      - mode
+                  logging:
+                    type: object
+                    description: logging defines the logging configuration for the service.
+                    properties:
+                      driver:
+                        type: string
+                        description: Logging driver
+                        enum:
+                          - json-file
+                          - syslog
+                          - journald
+                          - gelf
+                          - fluentd
+                          - fluentbit
+                      options:
+                        type: object
+                        description: Logging driver options
+                        properties:
+                          tag:
+                            type: string
+                            description: Logging tag
+                        minItems: 1
+                    required:
+                      - driver
+                  security_opt:
+                    type: array
+                    description: >-
+                      security_opt overrides the default labeling scheme for each
+                      container.
+                    items:
+                      type: string
+                      description: Security option
+                      pattern: '^[a-zA-Z0-9-_]+$'
+                    minItems: 1
+                  command:
+                    type: string
+                    description: Overrides the command executed on container start-up
+                  depends_on:
+                    type: array
+                    items:
+                      type: string
+                      description: >-
+                        Expresses startup and shutdown dependencies between services
+                        (the name must match the service key).
+                      pattern: '^[a-zA-Z0-9_-]+$'
+                required:
+                  - images
+                  - container_name
+                  - restart
+                minProperties: 1
+                additionalProperties: false
+    RepositoryAppCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: "^[a-zA-Z0-9_]+$"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 100
+        icon:
+          type: string
+          description: 'Icon name for the category (Available icons: https://ionic.io/ionicons)'
+          enum:
+          - accessibility
+          - add
+          - add-circle
+          - airplane
+          - alarm
+          - albums
+          - alert
+          - alert-circle
+          - american-football
+          - analytics
+          - aperture
+          - apps
+          - archive
+          - arrow-back
+          - arrow-back-circle
+          - arrow-down
+          - arrow-down-circle
+          - arrow-forward
+          - arrow-forward-circle
+          - arrow-redo
+          - arrow-redo-circle
+          - arrow-undo
+          - arrow-undo-circle
+          - arrow-up
+          - arrow-up-circle
+          - at
+          - at-circle
+          - attach
+          - backspace
+          - bag
+          - bag-add
+          - bag-check
+          - bag-handle
+          - bag-remove
+          - balloon
+          - ban
+          - bandage
+          - bar-chart
+          - barbell
+          - barcode
+          - baseball
+          - basket
+          - basketball
+          - battery-charging
+          - battery-dead
+          - battery-full
+          - battery-half
+          - beaker
+          - bed
+          - beer
+          - bicycle
+          - bluetooth
+          - boat
+          - body
+          - bonfire
+          - book
+          - bookmark
+          - bookmarks
+          - bowling-ball
+          - briefcase
+          - browsers
+          - brush
+          - bug
+          - build
+          - bulb
+          - bus
+          - business
+          - cafe
+          - calculator
+          - calendar
+          - calendar-clear
+          - calendar-number
+          - call
+          - camera
+          - camera-reverse
+          - car
+          - car-sport
+          - card
+          - caret-back
+          - caret-back-circle
+          - caret-down
+          - caret-down-circle
+          - caret-forward
+          - caret-forward-circle
+          - caret-up
+          - caret-up-circle
+          - cart
+          - cash
+          - cellular
+          - chatbox
+          - chatbox-ellipses
+          - chatbubble
+          - chatbubble-ellipses
+          - chatbubbles
+          - checkbox
+          - checkmark
+          - checkmark-circle
+          - checkmark-done
+          - checkmark-done-circle
+          - chevron-back
+          - chevron-back-circle
+          - chevron-down
+          - chevron-down-circle
+          - chevron-forward
+          - chevron-forward-circle
+          - chevron-up
+          - chevron-up-circle
+          - clipboard
+          - close
+          - close-circle
+          - cloud
+          - cloud-circle
+          - cloud-done
+          - cloud-download
+          - cloud-offline
+          - cloud-upload
+          - cloudy
+          - cloudy-night
+          - code
+          - code-download
+          - code-slash
+          - code-working
+          - cog
+          - color-fill
+          - color-filter
+          - color-palette
+          - color-wand
+          - compass
+          - construct
+          - contract
+          - contrast
+          - copy
+          - create
+          - crop
+          - cube
+          - cut
+          - desktop
+          - diamond
+          - dice
+          - disc
+          - document
+          - document-attach
+          - document-lock
+          - document-text
+          - documents
+          - download
+          - duplicate
+          - ear
+          - earth
+          - easel
+          - egg
+          - ellipse
+          - ellipsis-horizontal
+          - ellipsis-horizontal-circle
+          - ellipsis-vertical
+          - ellipsis-vertical-circle
+          - enter
+          - exit
+          - expand
+          - extension-puzzle
+          - eye
+          - eye-off
+          - eyedrop
+          - fast-food
+          - female
+          - file-tray
+          - file-tray-full
+          - file-tray-stacked
+          - film
+          - filter
+          - filter-circle
+          - finger-print
+          - fish
+          - fitness
+          - flag
+          - flame
+          - flash
+          - flash-off
+          - flashlight
+          - flask
+          - flower
+          - folder
+          - folder-open
+          - football
+          - footsteps
+          - funnel
+          - game-controller
+          - gift
+          - git-branch
+          - git-commit
+          - git-compare
+          - git-merge
+          - git-network
+          - git-pull-request
+          - glasses
+          - globe
+          - golf
+          - grid
+          - hammer
+          - hand-left
+          - hand-right
+          - happy
+          - hardware-chip
+          - headset
+          - heart
+          - heart-circle
+          - heart-dislike
+          - heart-dislike-circle
+          - heart-half
+          - help
+          - help-buoy
+          - help-circle
+          - home
+          - hourglass
+          - ice-cream
+          - id-card
+          - image
+          - images
+          - infinite
+          - information
+          - information-circle
+          - invert-mode
+          - journal
+          - key
+          - keypad
+          - language
+          - laptop
+          - layers
+          - leaf
+          - library
+          - link
+          - list
+          - list-circle
+          - locate
+          - location
+          - lock-closed
+          - lock-open
+          - log-in
+          - log-out
+          - logo-alipay
+          - logo-amazon
+          - logo-amplify
+          - logo-android
+          - logo-angular
+          - logo-apple
+          - logo-apple-appstore
+          - logo-apple-ar
+          - logo-behance
+          - logo-bitbucket
+          - logo-bitcoin
+          - logo-buffer
+          - logo-capacitor
+          - logo-chrome
+          - logo-closed-captioning
+          - logo-codepen
+          - logo-css3
+          - logo-designernews
+          - logo-deviantart
+          - logo-discord
+          - logo-docker
+          - logo-dribbble
+          - logo-dropbox
+          - logo-edge
+          - logo-electron
+          - logo-euro
+          - logo-facebook
+          - logo-figma
+          - logo-firebase
+          - logo-firefox
+          - logo-flickr
+          - logo-foursquare
+          - logo-github
+          - logo-gitlab
+          - logo-google
+          - logo-google-playstore
+          - logo-hackernews
+          - logo-html5
+          - logo-instagram
+          - logo-ionic
+          - logo-ionitron
+          - logo-javascript
+          - logo-laravel
+          - logo-linkedin
+          - logo-markdown
+          - logo-mastodon
+          - logo-medium
+          - logo-microsoft
+          - logo-no-smoking
+          - logo-nodejs
+          - logo-npm
+          - logo-octocat
+          - logo-paypal
+          - logo-pinterest
+          - logo-playstation
+          - logo-pwa
+          - logo-python
+          - logo-react
+          - logo-reddit
+          - logo-rss
+          - logo-sass
+          - logo-skype
+          - logo-slack
+          - logo-snapchat
+          - logo-soundcloud
+          - logo-stackoverflow
+          - logo-steam
+          - logo-stencil
+          - logo-tableau
+          - logo-tiktok
+          - logo-tumblr
+          - logo-tux
+          - logo-twitch
+          - logo-twitter
+          - logo-usd
+          - logo-venmo
+          - logo-vercel
+          - logo-vimeo
+          - logo-vk
+          - logo-vue
+          - logo-web-component
+          - logo-wechat
+          - logo-whatsapp
+          - logo-windows
+          - logo-wordpress
+          - logo-xbox
+          - logo-xing
+          - logo-yahoo
+          - logo-yen
+          - logo-youtube
+          - magnet
+          - mail
+          - mail-open
+          - mail-unread
+          - male
+          - male-female
+          - man
+          - map
+          - medal
+          - medical
+          - medkit
+          - megaphone
+          - menu
+          - mic
+          - mic-circle
+          - mic-off
+          - mic-off-circle
+          - moon
+          - move
+          - musical-note
+          - musical-notes
+          - navigate
+          - navigate-circle
+          - newspaper
+          - notifications
+          - notifications-circle
+          - notifications-off
+          - notifications-off-circle
+          - nuclear
+          - nutrition
+          - open
+          - options
+          - paper-plane
+          - partly-sunny
+          - pause
+          - pause-circle
+          - paw
+          - pencil
+          - people
+          - people-circle
+          - person
+          - person-add
+          - person-circle
+          - person-remove
+          - phone-landscape
+          - phone-portrait
+          - pie-chart
+          - pin
+          - pint
+          - pizza
+          - planet
+          - play
+          - play-back
+          - play-back-circle
+          - play-circle
+          - play-forward
+          - play-forward-circle
+          - play-skip-back
+          - play-skip-back-circle
+          - play-skip-forward
+          - play-skip-forward-circle
+          - podium
+          - power
+          - pricetag
+          - pricetags
+          - print
+          - prism
+          - pulse
+          - push
+          - qr-code
+          - radio
+          - radio-button-off
+          - radio-button-on
+          - rainy
+          - reader
+          - receipt
+          - recording
+          - refresh
+          - refresh-circle
+          - reload
+          - reload-circle
+          - remove
+          - remove-circle
+          - reorder-four
+          - reorder-three
+          - reorder-two
+          - repeat
+          - resize
+          - restaurant
+          - return-down-back
+          - return-down-forward
+          - return-up-back
+          - return-up-forward
+          - ribbon
+          - rocket
+          - rose
+          - sad
+          - save
+          - scale
+          - scan
+          - scan-circle
+          - school
+          - search
+          - search-circle
+          - send
+          - server
+          - settings
+          - shapes
+          - share
+          - share-social
+          - shield
+          - shield-checkmark
+          - shield-half
+          - shirt
+          - shuffle
+          - skull
+          - snow
+          - sparkles
+          - speedometer
+          - square
+          - star
+          - star-half
+          - stats-chart
+          - stop
+          - stop-circle
+          - stopwatch
+          - storefront
+          - subway
+          - sunny
+          - swap-horizontal
+          - swap-vertical
+          - sync
+          - sync-circle
+          - tablet-landscape
+          - tablet-portrait
+          - telescope
+          - tennisball
+          - terminal
+          - text
+          - thermometer
+          - thumbs-down
+          - thumbs-up
+          - thunderstorm
+          - ticket
+          - time
+          - timer
+          - today
+          - toggle
+          - trail-sign
+          - train
+          - transgender
+          - trash
+          - trash-bin
+          - trending-down
+          - trending-up
+          - triangle
+          - trophy
+          - tv
+          - umbrella
+          - unlink
+          - videocam
+          - videocam-off
+          - volume-high
+          - volume-low
+          - volume-medium
+          - volume-mute
+          - volume-off
+          - walk
+          - wallet
+          - warning
+          - watch
+          - water
+          - wifi
+          - wine
+          - woman
+      minItems: 1
