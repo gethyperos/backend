@@ -49,6 +49,7 @@ declare namespace HyperAPI {
       SecurityOpt?: string[]
     },
     RestartPolicy?: { Name: string }
+    Labels: { [key: string]: string }
   }
 }
 
