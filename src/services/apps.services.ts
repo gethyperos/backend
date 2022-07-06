@@ -59,13 +59,13 @@ export async function removeApp(appId: number) {
     throw new Error('App not found')
   }
 
-  if (app.network) {
-    await removeDockerNetwork(app.network)
-  }
-
   await asyncForEach(app.container.split(','), async (containerId) => {
     await removeDockerContainer(containerId)
   })
+
+  if (app.network) {
+    await removeDockerNetwork(app.network)
+  }
 
   await prisma.app.delete({ where: { id: appId } })
 }

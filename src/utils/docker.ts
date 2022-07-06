@@ -51,7 +51,10 @@ export async function addDockerNetwork(name: string) {
 }
 
 export async function removeDockerNetwork(nameOrId: string) {
-  //
+  const docker = await getDockerConn()
+  const network = await docker.getNetwork(nameOrId)
+
+  await network.remove()
 }
 
 export async function getNetwork(nameOrId: string) {
