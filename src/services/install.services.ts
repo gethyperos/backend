@@ -5,7 +5,10 @@ import { createUserDB } from './user.services'
 
 const prisma = new PrismaClient()
 
-export async function startInitialSetup(user: { username: string, password: string }, hostname: string) {
+export async function startInitialSetup(
+  user: { username: string; password: string },
+  hostname: string
+) {
   try {
     const installStatus = await prisma.config.findUnique({
       where: {
@@ -13,20 +16,21 @@ export async function startInitialSetup(user: { username: string, password: stri
       },
     })
 
-
     if (installStatus && installStatus.value === 'true') {
       throw new Error('HyperOS is alredy installed.')
     }
 
+    // eslint-disable-next-line no-restricted-syntax, guard-for-in
     for (const key in defaultSettings) {
-      //@ts-ignore
+      // @ts-ignore
       const setting = defaultSettings[key]
 
+      // eslint-disable-next-line no-await-in-loop
       await prisma.config.create({
         data: {
-          key: key,
+          key,
           value: setting.value,
-          type: setting.type
+          type: setting.type,
         },
       })
     }
@@ -36,8 +40,8 @@ export async function startInitialSetup(user: { username: string, password: stri
       data: {
         key: 'hostname',
         value: hostname,
-        type: 'string'
-      }
+        type: 'string',
+      },
     })
 
     await prisma.config.upsert({
@@ -47,20 +51,19 @@ export async function startInitialSetup(user: { username: string, password: stri
       create: {
         key: '_install_status',
         value: 'true',
-        type: 'boolean'
+        type: 'boolean',
       },
       update: {
         key: '_install_status',
         value: 'true',
-        type: 'boolean'
-      }
+        type: 'boolean',
+      },
     })
 
     await createUserDB({
       username: user.username,
       password: user.password,
     })
-
   } catch (e) {
     throw new Error(`${e}`)
   }
