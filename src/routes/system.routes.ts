@@ -13,6 +13,7 @@ router.put('/configs', authMiddleware, updateConfig)
 // Ex: Containers, Images, CPU, RAM, Disk, etc.
 router.get('/containers', authMiddleware, getContainers)
 router.get('/containers/:containerId', authMiddleware, getContainers)
+router.get('/images', authMiddleware, getImages)
 router.get('/images/:image', authMiddleware, getImages)
 
 export default router
