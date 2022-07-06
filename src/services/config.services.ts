@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { clearCache } from '@root/cache/apiCache'
 
 const prisma = new PrismaClient()
 
@@ -13,6 +14,8 @@ export async function getConfigsDB() {
 }
 
 export async function updateConfigDB(key: string, value: string) {
+  clearCache('dockerConn')
+
   try {
     const config = await prisma.config.update({
       where: {
