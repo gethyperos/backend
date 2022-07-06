@@ -31,6 +31,7 @@ export async function startInitialSetup(
           key,
           value: setting.value,
           type: setting.type,
+          description: setting.description,
         },
       })
     }
@@ -67,4 +68,8 @@ export async function startInitialSetup(
   } catch (e) {
     throw new Error(`${e}`)
   }
+}
+
+export async function uninstallHyperOS() {
+  // TODO
 }

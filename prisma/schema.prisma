@@ -22,6 +22,7 @@ model Config {
   key    String @unique
   value  String
   type   String
+  description String?
 }
 
 model UserConfig {
