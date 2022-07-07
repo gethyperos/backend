@@ -55,6 +55,30 @@ export async function getRepositoryCategories(req: Request, res: Response, next:
   }
 }
 
+export async function getRepoStatic(req: Request, res: Response, next: NextFunction) {
+  const path = req.path.replace('/file/', '')
+
+  if (!path) {
+    next({
+      statusCode: 400,
+      error: 'Missing param',
+      message: 'path param is required',
+    })
+  }
+
+  try {
+    const file = await fetchRepositoryFile(null, path as string)
+
+    res.status(301).redirect(file)
+  } catch (e) {
+    next({
+      statusCode: 500,
+      message: 'unable to parse repository file',
+      error: `${e}`,
+    })
+  }
+}
+
 export async function getAppStatic(req: Request, res: Response, next: NextFunction) {
   const { app } = req.params
   const { path } = req.query

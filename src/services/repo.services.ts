@@ -14,24 +14,24 @@ export async function fetchRepositoryData(): Promise<HyperAPI.IAppRepository> {
   return repository
 }
 
-export async function fetchRepositoryFile(appId: string, path: string) {
+export async function fetchRepositoryFile(appId: string | null, path: string) {
   try {
     const repository = await ensureCache('repository_apps', async () => {
       return fetchRepositoryData()
     })
 
-    const app = searchWithParameters({ id: appId }, repository)[0]
+    const cdnURL = await fetchRepositoryCDN()
 
-    if (!app) {
-      throw new Error('App not found')
+    if (!appId) {
+      return `${cdnURL}/${path}`
     }
+
+    const app = searchWithParameters({ id: appId }, repository)[0]
 
     if (path.includes(`Apps/${app.directory}`)) {
       // eslint-disable-next-line no-param-reassign
       path = path.replace(`Apps/${app.directory}/`, '')
     }
-
-    const cdnURL = await fetchRepositoryCDN()
 
     return `${cdnURL}/Apps/${app.directory}/${path}`
   } catch (e) {
