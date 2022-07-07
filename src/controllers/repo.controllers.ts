@@ -56,9 +56,9 @@ export async function getRepositoryCategories(req: Request, res: Response, next:
 }
 
 export async function getRepoStatic(req: Request, res: Response, next: NextFunction) {
-  const path = req.path.replace('/file/', '')
+  const { url } = req.query
 
-  if (!path) {
+  if (!url) {
     next({
       statusCode: 400,
       error: 'Missing param',
@@ -67,7 +67,7 @@ export async function getRepoStatic(req: Request, res: Response, next: NextFunct
   }
 
   try {
-    const file = await fetchRepositoryFile(null, path as string)
+    const file = await fetchRepositoryFile(null, url as string)
 
     res.status(301).redirect(file)
   } catch (e) {
@@ -81,13 +81,13 @@ export async function getRepoStatic(req: Request, res: Response, next: NextFunct
 
 export async function getAppStatic(req: Request, res: Response, next: NextFunction) {
   const { app } = req.params
-  const { path } = req.query
+  const { url } = req.query
 
-  if (!path) {
+  if (!url) {
     next({
       statusCode: 400,
       error: 'Missing field',
-      message: 'path field is required',
+      message: 'url field is required',
     })
   }
 
@@ -100,7 +100,7 @@ export async function getAppStatic(req: Request, res: Response, next: NextFuncti
   }
 
   try {
-    const file = await fetchRepositoryFile(app as string, path as string)
+    const file = await fetchRepositoryFile(app as string, url as string)
     // res.status(200).json({
     //   fileURL: file
     // })
