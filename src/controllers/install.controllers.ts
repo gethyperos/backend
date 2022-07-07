@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { startInitialSetup } from '@service/install.services'
+import { checkInstallStatus, startInitialSetup } from '@service/install.services'
 
 export default async function install(req: Request, res: Response, next: NextFunction) {
   const { user, hostname } = req.body
@@ -21,4 +21,12 @@ export default async function install(req: Request, res: Response, next: NextFun
       error: `${e}`,
     })
   }
+}
+
+export async function checkInstall(req: Request, res: Response, next: NextFunction) {
+  const status = await checkInstallStatus()
+
+  res.status(200).json({
+    install_status: status,
+  })
 }
