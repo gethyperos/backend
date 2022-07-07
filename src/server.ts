@@ -11,7 +11,7 @@ const port = process.env.PORT || 5001
 const logger = new signale.Signale()
 const apiSpecs = YAML.load('api-spec.yaml')
 
-app.use('/', swaggerUi.serve, swaggerUi.setup(apiSpecs))
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(apiSpecs))
 app.listen(port, () => {
   internalIpV4().then((internalIP) => {
     const scope = logger.scope('⚡ HyperOS')
