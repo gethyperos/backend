@@ -16,10 +16,6 @@ export async function startInitialSetup(
       },
     })
 
-    if (installStatus && installStatus.value === 'true') {
-      throw new Error('HyperOS is alredy installed.')
-    }
-
     // eslint-disable-next-line no-restricted-syntax, guard-for-in
     for (const key in defaultSettings) {
       // @ts-ignore
@@ -68,6 +64,20 @@ export async function startInitialSetup(
   } catch (e) {
     throw new Error(`${e}`)
   }
+}
+
+export async function checkInstallStatus() {
+  const installStatus = await prisma.config.findUnique({
+    where: {
+      key: '_install_status',
+    },
+  })
+
+  if (!installStatus) {
+    return false
+  }
+
+  return installStatus.value === 'true'
 }
 
 export async function uninstallHyperOS() {
