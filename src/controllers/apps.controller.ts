@@ -14,7 +14,7 @@ export async function getApps(req: Request, res: Response, next: NextFunction) {
       const result = await getAppsDB()
       return result
     })
-    const filteredApps = searchWithParameters(appId ? { appId } : filter, apps)
+    const filteredApps = searchWithParameters(appId ? { id: appId } : filter, apps)
 
     res.status(200).json({ apps: filteredApps })
   } catch (e) {

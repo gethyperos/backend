@@ -1,6 +1,7 @@
 import express from 'express'
 import helmet from 'helmet'
 import dotenv from 'dotenv'
+import cors from 'cors'
 
 import authRoutes from '@route/auth.routes'
 import appRoutes from '@route/app.routes'
@@ -18,6 +19,11 @@ const app = express()
 dotenv.config()
 
 app.use(helmet())
+app.use(
+  cors({
+    origin: '*',
+  })
+)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(logMiddleware)
