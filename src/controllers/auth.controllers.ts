@@ -4,7 +4,7 @@ import authenticateUser from '@service/auth.services'
 
 export default async function login(req: Request, res: Response, next: NextFunction) {
   const { username, password } = req.body
-  console.log('REQ BODY', req.body)
+
   if (!username) {
     next({
       error: 'Missing fields.',

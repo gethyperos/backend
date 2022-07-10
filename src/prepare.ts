@@ -24,8 +24,8 @@ if (!token) {
 if (!dbURL) {
   interactiveLog.error('[%d/3] DATABASE_URL is not defined', 1)
   interactiveLog.start('[%d/3] Setting path...', 2)
-  appendFileSync('.env', `DATABASE_URL="file:db.sqlite"\n`)
-  interactiveLog.success(`[%d/3] Database path configured`, 3)
+  appendFileSync('.env', 'DATABASE_URL="file:db.sqlite"\n')
+  interactiveLog.success('[%d/3] Database path configured', 3)
 
-  process.env.DATABASE_URL = "db.sqlite"
+  process.env.DATABASE_URL = 'db.sqlite'
 }
