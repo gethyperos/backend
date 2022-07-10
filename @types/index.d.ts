@@ -6,6 +6,7 @@ declare namespace HyperAPI {
     id: number
     name: string
     token: string
+    avatar: string
   }
 
   interface IAppRepository {
