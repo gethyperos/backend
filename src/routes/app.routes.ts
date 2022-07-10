@@ -2,6 +2,7 @@ import express from 'express'
 
 import {
   getApps,
+  getAppState,
   installApp,
   uninstallApp,
   updateApp,
@@ -21,5 +22,6 @@ router.post('/start/:appId', authMiddleware, startApp)
 router.post('/stop/:appId', authMiddleware, stopApp)
 router.post('/custom', authMiddleware, installCustomApp)
 router.delete('/:appId', authMiddleware, uninstallApp)
+router.get('/:appId/state', authMiddleware, getAppState)
 
 export default router

@@ -10,12 +10,6 @@ export async function startInitialSetup(
   hostname: string
 ) {
   try {
-    const installStatus = await prisma.config.findUnique({
-      where: {
-        key: '_install_status',
-      },
-    })
-
     // eslint-disable-next-line no-restricted-syntax, guard-for-in
     for (const key in defaultSettings) {
       // @ts-ignore
