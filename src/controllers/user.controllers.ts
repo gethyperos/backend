@@ -28,7 +28,11 @@ export async function createUser(req: Request, res: Response, next: NextFunction
   }
 
   try {
-    const user = await createUserDB({ username, password })
+    const avatar = new URL(
+      `https://ui-avatars.com/api/?background=random&name=${username}&size=200&bold=true`
+    ).toString()
+
+    const user = await createUserDB({ username, password, avatar })
 
     res.status(200).json({ user })
   } catch (e) {
@@ -139,7 +143,11 @@ export async function firstUser(req: Request, res: Response, next: NextFunction)
       throw new Error('Another user alredy exists')
     }
 
-    const user = await createUserDB({ username, password })
+    const avatar = new URL(
+      `https://ui-avatars.com/api/?background=random&name=${username}&size=200&bold=true`
+    ).toString()
+
+    const user = await createUserDB({ username, password, avatar })
 
     res.status(200).json({ user })
   } catch (e) {
