@@ -67,7 +67,10 @@ export async function getRepoStatic(req: Request, res: Response, next: NextFunct
   }
 
   try {
-    const file = await fetchRepositoryFile(null, url as string)
+    const file = await ensureCache(url as string, async () => {
+      const repoURL = await fetchRepositoryFile(null, url as string)
+      return repoURL
+    })
 
     res.status(301).redirect(file)
   } catch (e) {
