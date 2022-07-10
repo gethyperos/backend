@@ -8,7 +8,6 @@ import {
   removeDockerNetwork,
 } from '@util/docker'
 import { asyncForEach } from '@util/general'
-import e from 'express'
 
 const prisma = new PrismaClient()
 
@@ -16,6 +15,16 @@ export async function getAppsDB() {
   const apps = await prisma.app.findMany()
 
   return apps
+}
+
+export async function getAppDB(appId: number) {
+  const app = await prisma.app.findUnique({
+    where: {
+      id: appId,
+    },
+  })
+
+  return app
 }
 
 export async function addApp(app: HyperOS.IAppRepository) {
@@ -58,16 +67,23 @@ export async function removeApp(appId: number) {
   if (!app) {
     throw new Error('App not found')
   }
+  try {
+    await asyncForEach(app.container.split(','), async (containerId) => {
+      await removeDockerContainer(containerId)
+    })
 
-  await asyncForEach(app.container.split(','), async (containerId) => {
-    await removeDockerContainer(containerId)
-  })
+    if (app.network) {
+      await removeDockerNetwork(app.network)
+    }
 
-  if (app.network) {
-    await removeDockerNetwork(app.network)
+    await prisma.app.delete({ where: { id: appId } })
+  } catch (e) {
+    await prisma.app.delete({
+      where: {
+        id: app.id,
+      },
+    })
   }
-
-  await prisma.app.delete({ where: { id: appId } })
 }
 
 export async function updateAppDB(

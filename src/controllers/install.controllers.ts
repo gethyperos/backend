@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkInstallStatus, startInitialSetup } from '@service/install.services'
+import { ensureCache } from '@root/cache/apiCache'
 
 export default async function install(req: Request, res: Response, next: NextFunction) {
   const { user, hostname } = req.body
@@ -24,9 +25,18 @@ export default async function install(req: Request, res: Response, next: NextFun
 }
 
 export async function checkInstall(req: Request, res: Response, next: NextFunction) {
-  const status = await checkInstallStatus()
+  try {
+    const installStatus = await checkInstallStatus()
 
-  res.status(200).json({
-    install_status: status,
-  })
+    res.status(200).json({
+      install_status: installStatus,
+      // install_status: false,
+    })
+  } catch (e) {
+    next({
+      statusCode: 500,
+      message: 'Checking installation status failed',
+      error: `${e}`,
+    })
+  }
 }
