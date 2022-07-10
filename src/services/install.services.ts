@@ -51,9 +51,14 @@ export async function startInitialSetup(
       },
     })
 
+    const avatar = new URL(
+      `https://ui-avatars.com/api/?background=random&name=${user.username}&size=200&bold=true`
+    ).toString()
+
     await createUserDB({
       username: user.username,
       password: user.password,
+      avatar,
     })
   } catch (e) {
     throw new Error(`${e}`)
