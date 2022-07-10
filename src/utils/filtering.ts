@@ -7,7 +7,7 @@ export function intersection<T>(a: T[], b: T[]): T[] {
   return a.filter((x) => b.includes(x))
 }
 
-export function searchWithParameters(filters: RequestQuery, objects: any) {
+export function searchWithParameters<T>(filters: RequestQuery, objects: any): T[] {
   const filteredObjects = objects.filter((object: any) => {
     let isValid = true
     // eslint-disable-next-line no-restricted-syntax

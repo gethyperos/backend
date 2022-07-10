@@ -50,7 +50,7 @@ export async function getAllUsersDB() {
   }
 }
 
-export async function createUserDB(data: { username: string; password: string }) {
+export async function createUserDB(data: { username: string; password: string; avatar: string }) {
   const hashedPassword = bcrypt.hashSync(data.password, 10)
 
   try {
@@ -58,6 +58,7 @@ export async function createUserDB(data: { username: string; password: string })
       data: {
         username: data.username,
         password: hashedPassword,
+        avatar: data.avatar,
       },
     })
     return user
