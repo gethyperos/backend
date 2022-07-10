@@ -22,7 +22,8 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "prettier": "prettier --check 'src/**/*.ts'",
     "prettier:fix": "prettier --write 'src/**/*.ts'",
-    "prepare": "esbuild --bundle src/prepare.ts --outdir=dist --allow-overwrite --sourcemap --platform=node --minify --external:./node_modules/* --format=esm && node ./dist/prepare.js && npx prisma db push && npm run build"
+    "prepare": "esbuild --bundle src/prepare.ts --outdir=dist --allow-overwrite --sourcemap --platform=node --minify --external:./node_modules/* --format=esm && node ./dist/prepare.js && npx prisma db push && npm run build",
+    "clean": "rm -rf dist && rm -rf prisma/db.sqlite && npm run prepare"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
