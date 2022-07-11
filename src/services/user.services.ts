@@ -41,6 +41,7 @@ export async function getAllUsersDB() {
         username: true,
         createdAt: true,
         updatedAt: true,
+        avatar: true,
       },
     })
 
