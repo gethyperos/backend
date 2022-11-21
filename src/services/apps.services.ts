@@ -8,6 +8,7 @@ import {
   removeDockerNetwork,
 } from '@util/docker'
 import { asyncForEach } from '@util/general'
+import { fetchRepositoryCDN } from '@util/repository'
 
 const prisma = new PrismaClient()
 
@@ -86,6 +87,36 @@ export async function removeApp(appId: number) {
   }
 }
 
+export async function removeAppDB(appId?: number, container?: string) {
+  if (appId) {
+    const app = await prisma.app.findUnique({ where: { id: appId } })
+
+    if (!app) {
+      throw new Error('App not found')
+    }
+
+    await prisma.app.delete({
+      where: {
+        id: app.id,
+      },
+    })
+  } else if (container) {
+    const app = await prisma.app.findUnique({ where: { container } })
+
+    if (!app) {
+      throw new Error('App not found')
+    }
+
+    await prisma.app.delete({
+      where: {
+        id: app.id,
+      },
+    })
+  } else {
+    throw new Error('App not found')
+  }
+}
+
 export async function updateAppDB(
   appId: number,
   fieldsToUpdate: { name?: string; icon?: string; port?: number }
@@ -100,6 +131,33 @@ export async function updateAppDB(
     where: { id: appId },
     data: fieldsToUpdate,
   })
-  clearCache('installedApps')
+  await clearCache('installedApps')
   return updatedApp
+}
+
+export async function addExternalAppDB({
+  name,
+  container,
+  directory,
+  icon,
+}: {
+  name: string
+  container: string
+  directory: string
+  icon: string
+}) {
+  const CDNURL = await fetchRepositoryCDN()
+
+  const appDB = await prisma.app.create({
+    data: {
+      container,
+      name,
+      external: true,
+      icon: `${CDNURL}/Apps/${directory}/${icon}`,
+      port: -1, // We are not sure if external apps have binded port, user should edit and add them.
+    },
+  })
+  await clearCache('installedApps')
+
+  return appDB
 }
