@@ -10,13 +10,13 @@ import axios from 'axios'
 
 import { clearCache } from '@root/cache/apiCache'
 import defaultSettings from '../../settings.json'
-import { createUserDB } from './user.services'
 
 const prisma = new PrismaClient()
 
 export async function startInitialSetup(
   user: { username: string; password: string },
-  hostname: string
+  hostname: string,
+  dockerURI: string
 ) {
   try {
     // eslint-disable-next-line no-restricted-syntax, guard-for-in
@@ -59,6 +59,24 @@ export async function startInitialSetup(
         type: 'boolean',
       },
     })
+
+    await prisma.config.upsert({
+      where: {
+        key: 'dockerURI',
+      },
+      create: {
+        key: 'dockerURI',
+        value: dockerURI,
+        type: 'string',
+      },
+      update: {
+        key: 'dockerURI',
+        value: dockerURI,
+        type: 'string',
+      },
+    })
+
+    await clearCache('systemConfigs')
 
     const avatar = new URL(
       `https://ui-avatars.com/api/?background=random&name=${user.username}&size=200&bold=true`
