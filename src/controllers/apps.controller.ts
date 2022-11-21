@@ -1,14 +1,16 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-nested-ternary */
 import { NextFunction, Request, Response } from 'express'
+import type { App as AppDB } from '@prisma/client'
 
-import { getAppsDB, addApp, removeApp, updateAppDB, getAppDB } from '@service/apps.services'
+import { getAppsDB, addApp, removeApp, updateAppDB, getAppDB, removeAppDB } from '@service/apps.services'
 import { ensureCache, clearCache } from '@root/cache/apiCache'
 
 import { searchWithParameters } from '@util/filtering'
-import { getContainerState } from '@util/docker'
+import { getContainer, getContainerState } from '@util/docker'
 import { asyncForEach } from '@util/general'
-import { getContainers } from './docker.controllers'
+import { importContainers } from '@service/install.services'
+
 
 export async function getApps(req: Request, res: Response, next: NextFunction) {
   const filter = req.query
@@ -19,10 +21,43 @@ export async function getApps(req: Request, res: Response, next: NextFunction) {
       const result = await getAppsDB()
       return result
     })
-    const filteredApps = searchWithParameters(appId ? { id: appId } : filter, apps)
+
+    interface AppStateData extends AppDB {
+      state: 'running' | 'dead' | 'paused' | 'restarting' | 'error' | 'stopped'
+    }
+
+    const filteredApps = searchWithParameters<AppStateData>(appId ? { id: appId } : filter, apps)
+
+    await asyncForEach(filteredApps, async (app, index) => {
+      await asyncForEach(app.container.split(','), async container => {
+        const appState = await getContainerState(container)
+        if (appState.dead) { filteredApps[index].state = 'dead'; return }
+        if (appState.restarting) { filteredApps[index].state = 'restarting'; return }
+        if (appState.paused) { filteredApps[index].state = 'paused'; return }
+        if (appState.errored) { filteredApps[index].state = 'error'; return }
+        if (appState.errored) { filteredApps[index].state = 'stopped'; return }
+
+        filteredApps[index].state = appState.running ? 'running' : 'stopped'
+      })
+    })
 
     res.status(200).json({ apps: filteredApps })
-  } catch (e) {
+  } catch (e: any) {
+    if (String(e).includes('No such container:')) {
+      const containerID = String(e).split('No such container:')[1].trim()
+
+      try {
+        await removeAppDB(undefined, containerID)
+        await clearCache('installedApps')
+        next(getApps(req, res, next))
+      } catch (err) {
+        next({
+          statusCode: 500,
+          message: `Found invalid/remove container: ${containerID} - unable to remove from database`,
+          error: `${err}`,
+        })
+      }
+    }
     next({
       statusCode: 500,
       message: 'Failed to get installed apps',
@@ -159,10 +194,63 @@ export async function getAppState(req: Request, res: Response, next: NextFunctio
   }
 }
 
+
 export async function startApp(req: Request, res: Response, next: NextFunction) {
-  //
+  const { appId } = req.params
+
+  try {
+    const app = await getAppDB(Number(appId))
+    if (!app) {
+      next({
+        statusCode: 404,
+        message: 'App not found',
+        error: 'App not found',
+      })
+      return
+    }
+
+    await asyncForEach(app.container.split(','), async id => {
+      const container = await getContainer(id)
+
+      await container.start()
+    })
+
+    res.status(200).json({ message: 'App started' })
+  } catch (e) {
+    next({
+      statusCode: 500,
+      message: 'Failed to start app',
+      error: `${e}`,
+    })
+  }
 }
 
 export async function stopApp(req: Request, res: Response, next: NextFunction) {
-  //
+  const { appId } = req.params
+
+  try {
+    const app = await getAppDB(Number(appId))
+    if (!app) {
+      next({
+        statusCode: 404,
+        message: 'App not found',
+        error: 'App not found',
+      })
+      return
+    }
+
+    await asyncForEach(app.container.split(','), async id => {
+      const container = await getContainer(id)
+
+      await container.stop()
+    })
+
+    res.status(200).json({ message: 'App stopped' })
+  } catch (e) {
+    next({
+      statusCode: 500,
+      message: 'Failed to stop app',
+      error: `${e}`,
+    })
+  }
 }
