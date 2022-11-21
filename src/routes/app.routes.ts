@@ -23,5 +23,6 @@ router.post('/stop/:appId', authMiddleware, stopApp)
 router.post('/custom', authMiddleware, installCustomApp)
 router.delete('/:appId', authMiddleware, uninstallApp)
 router.get('/:appId/state', authMiddleware, getAppState)
+router.post('/import', authMiddleware, installCustomApp)
 
 export default router
