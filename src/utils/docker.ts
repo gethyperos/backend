@@ -90,6 +90,14 @@ export async function addDockerContainer(
   return container
 }
 
+export async function getContainer(containerId: string) {
+  const docker = await getDockerConn()
+
+  const container = await docker.getContainer(containerId)
+
+  return container
+}
+
 export async function getContainerState(containerId: string) {
   const docker = await getDockerConn()
   const container = await docker.getContainer(containerId)
