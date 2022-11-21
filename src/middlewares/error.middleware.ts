@@ -19,5 +19,4 @@ export default async function errorMiddleware(
     message: err.message,
     error: err.error || 'Unknown error',
   })
-
 }
