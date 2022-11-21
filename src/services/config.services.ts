@@ -15,6 +15,7 @@ export async function getConfigsDB() {
 
 export async function updateConfigDB(key: string, value: string) {
   clearCache('dockerConn')
+  clearCache('systemConfigs')
 
   try {
     const config = await prisma.config.update({
