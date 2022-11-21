@@ -6,7 +6,7 @@ import { fetchFileFromCDN, fetchRepositoryCDN } from '@util/repository'
 
 const prisma = new PrismaClient()
 
-export async function fetchRepositoryData(): Promise<HyperAPI.IAppRepository> {
+export async function fetchRepositoryData(): Promise<HyperAPI.IAppRepository[]> {
   const repository = await ensureCache('repository_apps', async () => {
     return fetchFileFromCDN('/index.json')
   })
@@ -26,7 +26,7 @@ export async function fetchRepositoryFile(appId: string | null, path: string) {
       return `${cdnURL}/${path}`
     }
 
-    const app = searchWithParameters({ id: appId }, repository)[0]
+    const app = searchWithParameters<HyperAPI.IAppRepository>({ id: appId }, repository)[0]
 
     if (path.includes(`Apps/${app.directory}`)) {
       // eslint-disable-next-line no-param-reassign
