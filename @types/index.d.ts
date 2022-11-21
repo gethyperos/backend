@@ -13,9 +13,9 @@ declare namespace HyperAPI {
     id: string
     name: string
     description: string
+    directory: string
     icon?: string
-    manifest: string
-    metadata: string
+    webport: number
     categories: string[]
   }
 
